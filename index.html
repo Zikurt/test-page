@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор стоимости бухгалтерского обслуживания | Профессиональные услуги</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            background-color: #f5f0eb;
+            background-image: linear-gradient(to bottom, #f5f0eb 0%, #e8e0d9 100%);
+            color: #4a3f35;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+        
+        h1, h2, h3, .form-group-title, .total-label, .calculate-btn, .submit-btn, .total-price {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .calculator-container {
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 12px;
+            background-color: #fffdfa;
+            box-shadow: 0 6px 20px rgba(93, 64, 55, 0.12);
+            border: 1px solid #e6ded6;
+        }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e6ded6;
+        }
+        
+        .header-section h1 {
+            color: #5d4037;
+            font-size: clamp(24px, 5vw, 32px);
+            margin-bottom: 10px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        
+        .header-section p {
+            color: #8c6b54;
+            font-size: clamp(16px, 3vw, 18px);
+            max-width: 700px;
+            margin: 0 auto;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+            padding: 20px;
+            background-color: #fdfaf6;
+            border-radius: 10px;
+            border-left: 4px solid #a1887f;
+            box-shadow: 0 2px 6px rgba(140, 107, 84, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .form-group.unfilled {
+            border-left-color: #d32f2f;
+            background-color: #fff8f8;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.2); }
+            70% { box-shadow: 0 0 0 8px rgba(211, 47, 47, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        }
+        
+        .form-group-title {
+            font-size: clamp(18px, 4vw, 20px);
+            font-weight: 600;
+            color: #5d4037;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group-title::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #a1887f;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #5d4037;
+            font-size: clamp(15px, 3vw, 16px);
+        }
+        
+        .required::after {
+            content: " *";
+            color: #d32f2f;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f9f6f3;
+            border: 1px solid #d7ccc8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(14px, 3vw, 16px);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .radio-option:hover {
+            border-color: #a1887f;
+            background-color: #f5f0eb;
+            transform: translateY(-2px);
+        }
+        
+        .radio-option input {
+            margin-right: 12px;
+            min-width: 18px;
+            min-height: 18px;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .number-input {
+            width: 100px;
+            padding: 12px;
+            border: 1px solid #d7ccc8;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #5d4037;
+            background: #f9f6f3;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+        
+        .number-input::-webkit-outer-spin-button,
+        .number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .number-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .number-btn {
+            width: 38px;
+            height: 26px;
+            background: #e8e0d9;
+            border: 1px solid #d7ccc8;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #5d4037;
+            transition: background 0.3s;
+            font-family: 'Montserrat', sans-serif;
+            touch-action: manipulation;
+        }
+        
+        .number-btn:hover {
+            background: #d7ccc8;
+        }
+        
+        input[type="text"], 
+        input[type="tel"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #d7ccc8;
+            border-radius: 8px;
+            font-size: clamp(15px, 3vw, 17px);
+            margin-top: 8px;
+            transition: border 0.3s;
+            background: #f9f6f3;
+            color: #5d4037;
+            font-family: 'Roboto', sans-serif;
+            -webkit-appearance: none;
+        }
+        
+        input[type="text"]:focus, 
+        input[type="tel"]:focus, 
+        textarea:focus, 
+        select:focus {
+            border-color: #8c6b54;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(140, 107, 84, 0.2);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .total-section {
+            background: linear-gradient(135deg, #8c6b54 0%, #5d4037 100%);
+            padding: 25px;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 10px;
+            color: #fffdfa;
+            box-shadow: 0 4px 12px rgba(93, 64, 55, 0.15);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .total-section.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .total-label {
+            font-size: clamp(18px, 4vw, 22px);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .total-price {
+            font-size: clamp(28px, 6vw, 38px);
+            font-weight: 700;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #a1887f 0%, #8c6b54 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: clamp(17px, 4vw, 20px);
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin: 25px 0 15px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(140, 107, 84, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            touch-action: manipulation;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(140, 107, 84, 0.25);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #5d4037 0%, #4a3f35 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: clamp(17px, 4vw, 20px);
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2);
+            touch-action: manipulation;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(93, 64, 55, 0.25);
+        }
+        
+        .form-note {
+            text-align: center;
+            margin-top: 20px;
+            color: #8c6b54;
+            font-size: clamp(14px, 3vw, 16px);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+        
+        .required-info {
+            text-align: right;
+            font-size: clamp(13px, 3vw, 15px);
+            color: #8c6b54;
+            margin-top: 12px;
+            font-style: italic;
+        }
+        
+        .problem-description {
+            margin-top: 12px;
+            display: none;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #d7ccc8, transparent);
+            margin: 25px 0;
+        }
+        
+        /* Мобильная оптимизация */
+        @media (max-width: 768px) {
+            .calculator-container {
+                padding: 20px 15px;
+                margin: 10px auto;
+            }
+            
+            .form-group {
+                padding: 16px;
+            }
+            
+            .radio-option {
+                padding: 10px 12px;
+            }
+            
+            .input-group {
+                gap: 12px;
+            }
+            
+            .number-input {
+                width: 90px;
+                padding: 10px;
+                font-size: 17px;
+            }
+            
+            .number-btn {
+                width: 35px;
+                height: 24px;
+                font-size: 15px;
+            }
+            
+            input[type="text"], 
+            input[type="tel"], 
+            textarea, 
+            select {
+                padding: 12px 14px;
+            }
+            
+            .total-section {
+                padding: 20px;
+            }
+            
+            .calculate-btn, .submit-btn {
+                padding: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .calculator-container {
+                padding: 15px 12px;
+            }
+            
+            .header-section {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
+            
+            .form-group {
+                padding: 14px 12px;
+            }
+            
+            .radio-option {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            
+            .number-input {
+                width: 80px;
+                padding: 9px;
+                font-size: 16px;
+            }
+            
+            .number-btn {
+                width: 32px;
+                height: 22px;
+            }
+            
+            input[type="text"], 
+            input[type="tel"], 
+            textarea, 
+            select {
+                padding: 11px 13px;
+                font-size: 15px;
+            }
+            
+            textarea {
+                min-height: 90px;
+            }
+        }
+        
+        /* Десктоп оптимизация */
+        @media (min-width: 1024px) {
+            .calculator-container {
+                padding: 35px 40px;
+            }
+            
+            .header-section {
+                padding-bottom: 30px;
+            }
+            
+            .form-group {
+                padding: 28px 30px;
+            }
+        }
+        
+        /* Анимации и улучшения UX */
+        .radio-option, .calculate-btn, .submit-btn, .number-btn {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+        
+        /* Лоадер для кнопки */
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header-section">
+            <h1>Индивидуальный расчет тарифа</h1>
+            <p>Рассчитайте приблизительную стоимость профессионального бухгалтерского сопровождения для вашего бизнеса за 1 минуту</p>
+        </div>
+        
+        <form id="calculatorForm" novalidate>
+            <div class="form-group">
+                <div class="form-group-title">Периодичность обслуживания</div>
+                <label class="required">Выберите периодичность бухгалтерского сопровождения:</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="serviceType" value="monthly" checked> 
+                        Ежемесячное обслуживание (расчет налога, сдача налоговой отчетности, кадровый учет, работа с первичными документами и прочие услуги)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="serviceType" value="quarterly"> 
+                        Ежеквартальное обслуживание (расчет налога и сдача налоговой отчетности)
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Система налогообложения</div>
+                <label class="required">Укажите применяемую систему налогообложения:</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="taxMode" value="usn" checked> 
+                        УСН (доходы)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="taxMode" value="patent"> 
+                        Патент
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Кадровый учет</div>
+                <label class="required">Количество сотрудников в штате:</label>
+                <div class="input-group">
+                    <div class="number-controls">
+                        <button type="button" class="number-btn" id="employees-increment">▲</button>
+                        <button type="button" class="number-btn" id="employees-decrement">▼</button>
+                    </div>
+                    <input type="number" id="employees-count" class="number-input" name="employeesCount" min="0" value="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Документооборот</div>
+                <label class="required">Объем первичных документов в месяц:</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="documentsWork" value="0" required> 
+                        Нет работы с документами
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="documentsWork" value="10" required> 
+                        До 10 документов в месяц
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="documentsWork" value="30" required> 
+                        До 30 документов в месяц
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="documentsWork" value="50" required> 
+                        До 50 документов в месяц
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Финансовые показатели</div>
+                <label class="required">Среднемесячные обороты компании (руб.):</label>
+                <input type="text" name="monthlyTurnover" placeholder="Укажите сумму в рублях" required>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Текущие проблемы</div>
+                <label class="required">Есть ли проблемы с учетом или блокировкой расчетного счета?</label>
+                <select name="accountingProblems" id="accountingProblems" required>
+                    <option value="">-- Выберите вариант --</option>
+                    <option value="no">Нет, проблем нет</option>
+                    <option value="blocked">Есть блокировка счета</option>
+                    <option value="errors">Есть ошибки в учете</option>
+                    <option value="other">Другая проблема</option>
+                </select>
+                
+                <div class="problem-description" id="problemDescription">
+                    <label class="required">Опишите проблему:</label>
+                    <textarea name="problemDetails" placeholder="Подробно опишите возникшую проблему..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Постановка задач</div>
+                <label class="required">Опишите ваши основные задачи для бухгалтера:</label>
+                <textarea name="tasksDescription" placeholder="Ведение учета, расчет зарплаты, сдача отчетности, консультации и т.д." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Контактные данные</div>
+                <label class="required">Контактный телефон:</label>
+                <input type="tel" name="phone" placeholder="+7 (XXX) XXX-XX-XX" required>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Ваши данные</div>
+                <label class="required">Ваше имя:</label>
+                <input type="text" name="name" placeholder="Имя" required>
+            </div>
+
+            <div class="form-group">
+                <div class="form-group-title">Информация о компании</div>
+                <label class="required">Основной вид деятельности:</label>
+                <input type="text" name="businessType" placeholder="Розничная торговля, услуги, производство и т.д." required>
+            </div>
+
+            <button type="button" id="calculateBtn" class="calculate-btn">
+                Произвести расчет стоимости
+            </button>
+            
+            <div class="divider"></div>
+
+            <div id="total-section" class="total-section">
+                <div id="total-label" class="total-label">Стоимость бухгалтерского обслуживания за месяц:</div>
+                <div id="total-price" class="total-price">0 руб.</div>
+            </div>
+
+            <input type="hidden" id="total-cost" name="totalCost" value="0">
+
+            <div class="required-info">* Поля, обязательные для заполнения</div>
+            
+            <button type="submit" class="submit-btn">
+                Отправить заявку на обслуживание
+            </button>
+            
+            <div class="form-note">
+                После отправки формы с Вами свяжется наш бухгалтер для уточнения деталей и подготовки индивидуального коммерческого предложения
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация EmailJS
+            emailjs.init("Dk_Rem253bOBpIW-n");
+            
+            // Основные элементы
+            const employeesInput = document.getElementById('employees-count');
+            const totalPriceElement = document.getElementById('total-price');
+            const totalLabelElement = document.getElementById('total-label');
+            const totalSection = document.getElementById('total-section');
+            const totalCostInput = document.getElementById('total-cost');
+            const accountingProblems = document.getElementById('accountingProblems');
+            const problemDescription = document.getElementById('problemDescription');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const form = document.getElementById('calculatorForm');
+            
+            // Скрываем поле описания проблемы по умолчанию
+            problemDescription.style.display = 'none';
+            
+            // Обработчик выбора проблем
+            function handleProblemChange() {
+                if (this.value === 'other') {
+                    problemDescription.style.display = 'block';
+                } else {
+                    problemDescription.style.display = 'none';
+                    document.querySelector('textarea[name="problemDetails"]').value = '';
+                }
+                totalSection.classList.remove('visible');
+            }
+            
+            // Добавляем обработчики для мобильных и десктоп
+            accountingProblems.addEventListener('change', handleProblemChange);
+            
+            // Функции для кнопок сотрудников
+            function incrementEmployees(e) {
+                employeesInput.value = parseInt(employeesInput.value) + 1;
+                totalSection.classList.remove('visible');
+            }
+            
+            function decrementEmployees(e) {
+                const currentValue = parseInt(employeesInput.value);
+                if (currentValue > 0) {
+                    employeesInput.value = currentValue - 1;
+                    totalSection.classList.remove('visible');
+                }
+            }
+            
+            // Обработчики для кнопок сотрудников
+            const incrementBtn = document.getElementById('employees-increment');
+            const decrementBtn = document.getElementById('employees-decrement');
+            
+            incrementBtn.addEventListener('click', incrementEmployees);
+            decrementBtn.addEventListener('click', decrementEmployees);
+            
+            // Обновление заголовка при изменении типа обслуживания
+            document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                radio.addEventListener('change', updateTotalLabel);
+            });
+            
+            // Функция обновления заголовка
+            function updateTotalLabel() {
+                const serviceType = document.querySelector('input[name="serviceType"]:checked').value;
+                totalLabelElement.textContent = serviceType === 'monthly' ? 
+                    'Стоимость бухгалтерского обслуживания за месяц:' : 
+                    'Стоимость бухгалтерского обслуживания за квартал:';
+            }
+            
+            // Проверка заполнения всех полей
+            function checkAllFieldsFilled() {
+                let allFilled = true;
+                
+                // Сброс подсветки
+                document.querySelectorAll('.form-group').forEach(group => {
+                    group.classList.remove('unfilled');
+                });
+                
+                // Проверка обязательных полей
+                document.querySelectorAll('[required]').forEach(field => {
+                    if (!field.value.trim()) {
+                        allFilled = false;
+                        field.closest('.form-group').classList.add('unfilled');
+                    }
+                });
+                
+                // Проверка описания проблемы при выборе "Другая проблема"
+                if (accountingProblems.value === 'other') {
+                    const problemDetails = document.querySelector('textarea[name="problemDetails"]');
+                    if (!problemDetails.value.trim()) {
+                        allFilled = false;
+                        problemDescription.closest('.form-group').classList.add('unfilled');
+                    }
+                }
+                
+                return allFilled;
+            }
+            
+            // Прокрутка к первому незаполненному полю
+            function scrollToFirstUnfilled() {
+                const firstUnfilled = document.querySelector('.unfilled');
+                if (firstUnfilled) {
+                    firstUnfilled.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }
+            }
+            
+            // Расчет стоимости
+            function calculateTotal() {
+                const serviceType = document.querySelector('input[name="serviceType"]:checked').value;
+                const basePrice = serviceType === 'monthly' ? 5000 : 6000;
+                
+                const employeesCount = parseInt(employeesInput.value) || 0;
+                const employeesCost = employeesCount * 1000;
+                
+                const documentsValue = document.querySelector('input[name="documentsWork"]:checked').value;
+                let documentsCost = 0;
+                
+                if (documentsValue !== '0') {
+                    if (documentsValue === '10') {
+                        documentsCost = serviceType === 'monthly' ? 1500 : 4000;
+                    } else if (documentsValue === '30') {
+                        documentsCost = serviceType === 'monthly' ? 4500 : 13500;
+                    } else if (documentsValue === '50') {
+                        documentsCost = serviceType === 'monthly' ? 7500 : 22000;
+                    }
+                }
+                
+                const totalCost = basePrice + employeesCost + documentsCost;
+                totalPriceElement.textContent = totalCost.toLocaleString('ru-RU') + ' руб.';
+                totalCostInput.value = totalCost;
+                updateTotalLabel();
+                totalSection.classList.add('visible');
+            }
+            
+            // Обработчик кнопки расчета
+            function handleCalculate() {
+                if (checkAllFieldsFilled()) {
+                    calculateTotal();
+                    
+                    // Плавная прокрутка к результату
+                    setTimeout(() => {
+                        totalSection.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center'
+                        });
+                    }, 300);
+                } else {
+                    scrollToFirstUnfilled();
+                    alert('Пожалуйста, заполните все обязательные поля (отмечены звездочкой *)');
+                }
+            }
+            
+            calculateBtn.addEventListener('click', handleCalculate);
+            
+            // Обработчик отправки формы
+            async function handleSubmit(e) {
+                e.preventDefault();
+                
+                // Проверка заполнения полей
+                if (!checkAllFieldsFilled()) {
+                    scrollToFirstUnfilled();
+                    alert('Пожалуйста, заполните все обязательные поля перед отправкой заявки');
+                    return;
+                }
+                
+                // Проверка выполнения расчета
+                if (!totalSection.classList.contains('visible')) {
+                    alert('Пожалуйста, произведите расчет стоимости перед отправкой заявки');
+                    calculateBtn.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+                
+                // Генерация ID заявки
+                const requestId = 'REQ-' + Date.now().toString().slice(-6);
+                
+                // Форматирование даты
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('ru-RU', {
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit'
+                });
+                
+                // Функция очистки данных
+                const cleanValue = (value) => {
+                    if (value === null || value === undefined) return '';
+                    return String(value)
+                        .replace(/[^\w\sа-яА-ЯёЁ.,!?@#$%^&*()_+=<>/\\|'"`~:;— -]/gu, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                };
+
+                // Получение значений формы
+                const getValue = (name) => cleanValue(form.elements[name].value);
+                const getRadioValue = (name) => {
+                    const selected = document.querySelector(`input[name="${name}"]:checked`);
+                    return selected ? cleanValue(selected.value) : '';
+                };
+                
+                // Подготовка параметров для EmailJS
+                const emailParams = {
+                    request_id: requestId,
+                    date: formattedDate,
+                    client_name: getValue('name'),
+                    client_phone: getValue('phone'),
+                    business_type: getValue('businessType'),
+                    service_type: getRadioValue('serviceType') === 'monthly' ? 
+                        'Ежемесячное обслуживание' : 'Ежеквартальное обслуживание',
+                    tax_mode: getRadioValue('taxMode') === 'usn' ? 'УСН (доходы)' : 'Патент',
+                    employees_count: getValue('employeesCount'),
+                    documents_volume: (() => {
+                        const val = getRadioValue('documentsWork');
+                        if (val === '0') return 'Нет работы с документами';
+                        if (val === '10') return 'До 10 документов в месяц';
+                        if (val === '30') return 'До 30 документов в месяц';
+                        if (val === '50') return 'До 50 документов в месяц';
+                        return '';
+                    })(),
+                    monthly_turnover: getValue('monthlyTurnover'),
+                    problems: (() => {
+                        const options = accountingProblems.options;
+                        return options[accountingProblems.selectedIndex]?.text || '';
+                    })(),
+                    problem_details: accountingProblems.value === 'other' ? 
+                        cleanValue(form.elements['problemDetails'].value) : '',
+                    tasks: getValue('tasksDescription'),
+                    total_cost: getValue('totalCost') + ' руб.'
+                };
+
+                // Изменение состояния кнопки
+                const submitBtn = document.querySelector('.submit-btn');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="loader"></span> Отправка...';
+                submitBtn.disabled = true;
+
+                try {
+                    // Отправка через EmailJS
+                    await emailjs.send('service_1fgu3go', 'template_fa4hsig', emailParams);
+                    
+                    // Успешная отправка
+                    alert(`Заявка ${requestId} успешно отправлена!\n\nНаш бухгалтер свяжется с Вами в течение 15 минут для уточнения деталей и подготовки коммерческого предложения.\n\nСпасибо за доверие!`);
+                    
+                    // Сброс формы
+                    form.reset();
+                    problemDescription.style.display = 'none';
+                    totalSection.classList.remove('visible');
+                    employeesInput.value = '0';
+                    
+                    // Прокрутка к началу формы
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (error) {
+                    // Ошибка отправки
+                    console.error('Ошибка отправки:', error);
+                    alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону.');
+                } finally {
+                    // Восстановление кнопки
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                }
+            }
+            
+            form.addEventListener('submit', handleSubmit);
+            
+            // Инициализация заголовка стоимости
+            updateTotalLabel();
+        });
+    </script>
+</body>
+</html>
